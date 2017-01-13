@@ -172,6 +172,94 @@ class mega3:
         
         #self.data_offsets = Blib.csv2array(datx[1])
 
+    def load_from_data(self,Mname,megastream,PREPROCESSED = False):#load mega form raw data (must be bin)
+        FOBS = 4
+        Fpoint = 0
+        DECODER = 'utf-8'
+        datx = []
+        if preprocessed == True:
+            if 'MEGA' not in megastream[0]:
+                megastream.reverse()
+                print('flipping')
+
+            if 'MEGA' not in megastream[0]:##better way of doing with iteration
+                print('MEGA header not found at beginning of data stream!')
+            else:
+                self.set_meganame(Mname)#sets mega name
+                self.set_version(megastream[0].strip('MEGA'))##version set
+                self.data_META = megasteream[1]##switches
+                #self.data_names = Blib.csv2array(datx[2])##filenames
+                self.data_names = megastream[2]##filenames
+                self.data_offsets = megastream[3]##offsets
+                self.data_data = megastream[4]
+                self.set_loaded('True')
+                ##dbg
+                if self.data_names[0] == 'TESTENTRY.MEGATEST':
+                    print('testentry detected, removing...')
+                    self.removefile('TESTENTRY.MEGATEST')
+
+        elif preprocessed == False:##UNFINISHED!
+            #if 'megastream[0]'
+            #f = open(mega,'rb')
+
+            datx.append(megastream[0:8].decode(DECODER))#header-txt
+            datx.append(megastream[8:16])#switches (txt atm)-bin
+
+            datx.append(f.readline())#filelist-txt
+            datx[2] = datx[2][:-2].decode(DECODER)##strips newline
+            print(datx[2])
+            datx[2] = Blib.csv2array(datx[2])
+
+            datx.append(f.read(len(datx[2])*FOBS))#offsets(will be bytes) -txt for now
+            datx.append(f.readlines())#[0].decode(DECODER))
+            #f.close()
+            #if is mega:
+            if 'MEGA' in datx[0]:
+                self.set_meganame(mega)#sets mega name
+                self.set_version(datx[0].strip('MEGA'))##version set
+                self.data_META = datx[1]##switches
+                #self.data_names = Blib.csv2array(datx[2])##filenames
+                self.data_names = datx[2]##filenames
+            
+
+                ##converts bytes to integer offset
+                temp =[]
+                for x in range(0,len(datx[3]),4):
+                    temp.append(datx[3][x:x+4])
+                for x in range(len(temp)):
+                    temp[x] = bytes.hex(temp[x])#bytes(temp[x],'ASCII'))
+                offsets = temp
+                temp = []
+                for x in range(len(offsets)):
+                    temp.append(int('0x'+str(offsets[x]),0))
+                #offsetsx = temp
+                
+
+                self.data_offsets = temp#datx[3]##assign offsets to object table
+                temp = []
+                ##end offsets bit
+
+                ##concencating data and converting to text ##may want to leave as binary and convert whaen needed
+                temp = b''
+                for x in range(len(datx[4])):
+                    temp = temp+datx[4][x]#.decode(DECODER)#data decoding removed
+                datx[4] = temp
+                self.data_data = datx[4]
+                self.set_loaded('True')
+                if self.data_names[0] == 'TESTENTRY.MEGATEST':
+                    print('testentry detected, removing...')
+                    self.removefile('TESTENTRY.MEGATEST')
+        else:
+            print('invalid PREPROCESS argument!')
+
+       # ##dbg
+       # if self.data_names[0] == 'TESTENTRY.MEGATEST':
+       #     print('testentry detected, removing...')
+       #     self.removefile('TESTENTRY.MEGATEST')
+
+        
+
+
     def internal_saver(self,fn):##saver funct for save/saveas as code same
         if self.is_loaded() == True:
             if len(self.data_names) == 0:
