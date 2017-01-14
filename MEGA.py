@@ -38,8 +38,8 @@ class mega3:
     ################
     def is_mega(self,fname):##checks if megafile formatted file exists@path
         if os.path.isfile(fname):
-            f = open(fname,'r')
-            lnx = f.read(8)
+            f = open(fname,'rb')
+            lnx = f.read(8).decode('utf-8')
             f.close()
             if 'MEGA3' in lnx:##change to explicit after mega built
                 return True
