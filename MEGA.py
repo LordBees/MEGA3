@@ -415,6 +415,23 @@ class mega3:
                 self.data_data = self.data_data + data
             else:
                 self.data_data = self.data_data + data.encode('utf-8')
+                
+    def appenddata(self,xname,xdata,PREPROCESSED = True):#appends data to file
+##        offsetstart = 0
+##        offset = int(self.data_offsets[self.data_names.index(file)])##finds offset data of file
+##        for x in range(0,self.data_names.index(file)):#self.file_names.index(file)):##add offsests to get starting line
+##                offsetstart +=int(self.data_offsets[x])
+##        end = offsetstart+offset## split after this then append and join
+        #data = b''
+        #data = self.fetch(xname)
+        #data = data + xdata
+        #self.replace(xname,data)
+
+        if PREPROCESSED == True:
+            pass##dont need to do anything
+        else:
+            pass##encode xdata
+        self.replacedata(xname,self.fetch(xname)+xdata)
 
     def replacedata(self,xname,data):#replaces data in megafile with raw data
         self.removefile(xname)
