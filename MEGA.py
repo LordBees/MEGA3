@@ -29,7 +29,10 @@ class mega3:
                     else:
                         print('MEGA header not found, File is not considered valid.')
             elif NEWIFNOTFOUND == True:
-                self.new(MEGAINIT)
+                if '.MEGA' in MEGAINIT:
+                    self.new(MEGAINIT,EXT ='')
+                else:
+                    self.new(MEGAINIT)
             else:
                 print('file does not exist')
 
@@ -56,6 +59,7 @@ class mega3:
     def is_compressed(self):#returns compression state
         return self.__COMPRESSED
     def is_loaded(self):##returns loading state
+        #print(self.__LOADED)
         return self.__LOADED
     def is_version(self):#gets version from loaded mega
         return self.__LOADEDVER
@@ -73,6 +77,7 @@ class mega3:
     ################
     def set_loaded(self,TorF):##set loaded as true/false
         self.__LOADED = bool(TorF)
+        #input(self.__LOADED)
     def set_version(self,newversion):##set version
         self.__LOADEDVER = newversion
     def set_meganame(self,newname):#set name
@@ -84,7 +89,8 @@ class mega3:
     ################
     ##    MEGA    ##
     ################
-    def new(self,Mname,OVR = False):#creates an empty file object for use
+    def new(self,Mname,OVR = False,EXT = 'MEGA'):#creates an empty file object for use
+        Mname = Mname+'.'+EXT
         if not os.path.isfile(Mname):
             self.set_loaded('True')
             #self.__MEGA_NAME = Mname
@@ -177,7 +183,7 @@ class mega3:
         Fpoint = 0
         DECODER = 'utf-8'
         datx = []
-        if preprocessed == True:
+        if PREPROCESSED == True:
             if 'MEGA' not in megastream[0]:
                 megastream.reverse()
                 print('flipping')
@@ -198,7 +204,8 @@ class mega3:
                     print('testentry detected, removing...')
                     self.removefile('TESTENTRY.MEGATEST')
 
-        elif preprocessed == False:##UNFINISHED!
+        elif PREPROCESSED == False:##UNFINISHED!
+            print('code not implemented fully yet!')
             #if 'megastream[0]'
             #f = open(mega,'rb')
 
@@ -300,7 +307,7 @@ class mega3:
             save_data[3] = xtemp
             xtemp = ''
             save_data.append(self.data_data)#.encode(ENCODER))##data ## forcing all data_data to be bin/bytes format
-            print(save_data)
+            print(save_data)##here
 
             f = open(fn,'wb')
             for x in save_data:
@@ -311,11 +318,13 @@ class mega3:
         else:
             print('operation failed!, No file loaded.')
 
+
     def save(self):#saves current megafile stored in memory to disk
         self.internal_saver(self.is_meganame())
 
     def saveas(self,fname):#saves current megafile to disk as a different name
         self.internal_saver(fname)
+
 
     def reload(self):##reloads mfiledata without saving
         if self.is_loaded():
@@ -334,20 +343,27 @@ class mega3:
             
     def compressloaded(self):#compresses data in mega if uncompressed
         pass
+
+
     def decompressloaded(self):#decompresses data in mega if compressed
         pass
 
+
     def addfile(self,fname):#adds file from disk to mega
-        f = open(fname,'rb')
-        xdat = f.readlines()#.decode('utf-8')
-        f.close()
-        xtemp = b''
-        for x in xdat:
-            xtemp = xtemp + x#.decode('utf-8')
-        self.adddata(fname,xtemp)
+        if self.is_loaded():# == True:
+            f = open(fname,'rb')
+            xdat = f.readlines()#.decode('utf-8')
+            f.close()
+            xtemp = b''
+            for x in xdat:
+                xtemp = xtemp + x#.decode('utf-8')
+            self.adddata(fname,xtemp)
+        else:
+            print('cannot addfile, no file loaded')
+
 
     def removefile(self,xname):#removes file from mega
-        if self.is_loaded() == True:
+        if self.is_loaded():# == True:
             if xname in self.data_names:
                 Fidx = self.data_names.index(xname)
                 print('Fidx',Fidx)
@@ -379,8 +395,11 @@ class mega3:
             print('error cannot saveas_reload if file not loaded!')
 
     def replacefile(self,fname):#replaces file in mega with one from disk
-        self.removefile(fname)
-        self.addfile(fname)
+        if self.is_loaded() == True:
+            self.removefile(fname)
+            self.addfile(fname)
+        else:
+            print('cannot replace file as no mega loaded')
 
     def renamefile(self,xname,newname):##renames file
         if self.is_loaded() == True:
@@ -389,33 +408,45 @@ class mega3:
         else:
             print('error cannot saveas_reload if file not loaded!')
     
-    def unpackfile(self,xname,destpath = ''):##unpacks file from currently loaded megafile
+    def unpackfile(self,xname,destpath = '',OVR = False):##unpacks file from currently loaded megafile
         if self.is_loaded() == True:
             cwd = os.getcwd()
             if destpath == '':
                 pass
             else:
                 os.chdir(destpath)
+
             xdat = self.fetch(xname)
             if os.path.isfile(xname):
-                pass
+                if OVR == True:
+                    print('overwriting:'+str(x))
+                    f = open(xname,'wb')
+                    f.write(xdat)
+                    f.close()
             else:
                 f = open(xname,'wb')
                 f.write(xdat)
                 f.close()
             os.chdir(cwd)
         else:
-            print('operation failed!, No file loaded.')
+            print('unpack operation failed!, No file loaded.')
+
 
     def adddata(self,xname,data):#adds raw data as new file
         if self.is_loaded() == True:
-            self.data_names.append(xname)
-            self.data_offsets.append(len(data))
-            if type(data) == bytes:
-                self.data_data = self.data_data + data
+            if xname in self.peek():
+                print('file already in mega')
             else:
-                self.data_data = self.data_data + data.encode('utf-8')
+                self.data_names.append(xname)
+                self.data_offsets.append(len(data))
+                if type(data) == bytes:
+                    self.data_data = self.data_data + data
+                else:
+                    self.data_data = self.data_data + data.encode('utf-8')
+        else:
+            print('cannot adddata as no file loaded!')
                 
+
     def appenddata(self,xname,xdata,PREPROCESSED = True):#appends data to file
 ##        offsetstart = 0
 ##        offset = int(self.data_offsets[self.data_names.index(file)])##finds offset data of file
@@ -430,12 +461,16 @@ class mega3:
         if PREPROCESSED == True:
             pass##dont need to do anything
         else:
-            pass##encode xdata
+            xdata = xdata.encode('utf-8')
+            #pass##encode xdata
         self.replacedata(xname,self.fetch(xname)+xdata)
 
     def replacedata(self,xname,data):#replaces data in megafile with raw data
-        self.removefile(xname)
-        self.adddata(xname,data)
+        if self.is_loaded() == True:
+            self.removefile(xname)
+            self.adddata(xname,data)
+        else:
+            print('cannot replace data if no file loaded!')
 
     def peek(self):#peeks files in mega
         if self.is_loaded() == True:
@@ -469,21 +504,92 @@ class mega3:
                 return file_data
         else:
             print('error cannot saveas_reload if file not loaded!')
+
     def close(self):#cleans up file and marks as unloaded
-        self.clear()
-        self.set_loaded('False')
+        if self.is_loaded() == True:
+            self.clear()
+            self.set_loaded('False')
+        else:
+            print('cannot close if data not present')
         
     def clear(self):#resets file as blank without closing file
-        self.data_META = ''##meta flags
-        self.data_names = []##fname table
-        self.data_offsets = []#offsets
-        self.data_data = ''#[]##datablock ##string for now
-        self.set_meganame('')
-        self.set_version('')
-        ##check clearing is proper
+        if self.is_loaded() == True:
+            self.data_META = ''##meta flags
+            self.data_names = []##fname table
+            self.data_offsets = []#offsets
+            self.data_data = ''#[]##datablock ##string for now
+            self.set_meganame('')
+            self.set_version('')
+            ##check clearing is proper
+        else:
+            print('cannot clear if no file loaded')
 
     def modify_attributes(self,xdat):##modifies 8byte header for updating
         pass
+
+    def unpack(self,xpath = '',ignores = [],OVR = False):#unpacks loaded mega to path ignoring files in ignores
+        if self.is_loaded() == True:
+            cwd = os.getcwd()
+            files = self.data_names
+            #if xpath == '':
+            #    pass
+            #else:
+            #    os.chdir(xpath)
+
+            for x in files:
+                if os.path.isfile(xpath+'\\'+x):
+                    if OVR == True:
+                        if x in ignores:
+                            print('skipping:'+str(x))
+                        else:
+                            print('overwriting:'+str(x))
+                            self.unpackfile(x,destpath = xpath,OVR = True)
+                    else:
+                        print('skippping file :'+str(x)+' :as file already exists (OVR=False)')
+                else:
+                    if x in ignores:
+                        print('skipping:'+str(x))
+                    else:
+                        self.unpackfile(x,destpath = xpath)
+            os.chdir(cwd)
+        else:
+            print('cannot unpack from file if no file loaded!')
+
+    def pack(self,xpath = '',ignores = [],UPDATEEXISTING = False):#packs all files in path to the currently loaded mega
+        if self.is_loaded() == True:
+            cwd = os.getcwd()
+            filesin = []
+            ignores.append(self.is_meganame())##so self not packed into itself
+            #os.chdir(xpath)
+            if xpath == '':
+                pass
+            else:
+                os.chdir(xpath)
+
+            files = os.listdir()
+            for x in files:
+                if os.path.isdir(x):
+                    ignores.append(x)
+
+            #filesin = self.peek()
+            filesin = self.data_names##fixed
+            print(files,filesin)
+            for x in files:
+                if x in ignores:
+                    print('skipping:'+str(x))
+                else:
+                    if x in filesin:
+                        if UPDATEEXISTING == True:
+                            print('adding:'+str(x))
+                            self.addfile(x)
+                        else:
+                            print('file already exists!,Skipping')
+                    else:
+                        print('adding:'+str(x))
+                        self.addfile(x)
+            os.chdir(cwd)
+        else:
+            print('cannot pack to file if no file is loaded!')
 
 
 

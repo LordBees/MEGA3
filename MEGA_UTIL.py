@@ -1,5 +1,6 @@
 from MEGA import *
 import os
+import BeeLibv3 as Blib
 
 ################
 ##    tools   ##
@@ -54,6 +55,27 @@ def util_decompress( tmega):#decompresses data in target mega if compressed
     pass
 def util_mega2to3( tmega):##converts to mega3 form
     pass
+def util_megapeek(tmega):##peeks fileheaders and files on mega without loading it fully
+    datx = []
+    f = open(tmega,'rb')
+    datx.append(f.read(8).decode(DECODER))#header-txt
+    datx.append(f.read(8))#switches (txt atm)-bin
+
+    datx.append(Blib.csv2array(f.readline()))#filelist-txt
+    f.close()
+    return datx
+
+def util_is_mega(self,fname):##checks if megafile formatted file exists@path
+        if os.path.isfile(fname):
+            f = open(fname,'rb')
+            lnx = f.read(8).decode('utf-8')
+            f.close()
+            if 'MEGA3' in lnx:##change to explicit after mega built
+                return True
+            else:
+                return False
+        else:
+            print('file does not exist!')
 
 
 
