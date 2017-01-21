@@ -41,4 +41,6 @@ y.unpack('ExTest')
 
 print('saving2disk')
 y.save()
+os.chdir(cwd)
+
 

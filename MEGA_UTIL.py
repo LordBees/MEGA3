@@ -32,12 +32,12 @@ def util_packpath(newmeganame,datapath = '',MEGAINDIR = True):##packs folder to 
         os.chdir(cwd)
 
 def util_unpacktopath(meganame,destpath = ''):#unpacks megafile to a folder
-    xmega = mega3(meganame)
+    xmega = mega3(meganame,NEWIFNOTFOUND = False)
     cwd = os.getcwd()
     if destpath == '':
         pass#cwd pack
     else:
-        os.chdir(datapath)
+        os.chdir(destpath)
     unpacker = xmega.peek()
     for x in unpacker:
             xmega.unpackfile(x)

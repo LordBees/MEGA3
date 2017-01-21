@@ -34,7 +34,7 @@ class mega3:
                 else:
                     self.new(MEGAINIT)
             else:
-                print('file does not exist')
+                print('file does not exist('+str(MEGAINIT)+')')
 
     ################
     ## the  usual ##
@@ -420,13 +420,17 @@ class mega3:
             if os.path.isfile(xname):
                 if OVR == True:
                     print('overwriting:'+str(x))
-                    f = open(xname,'wb')
-                    f.write(xdat)
-                    f.close()
+                    with open(xname,'wb') as f:
+                        f.write(xdat)
+                    #f = open(xname,'wb')
+                    #f.write(xdat)
+                    #f.close()
             else:
-                f = open(xname,'wb')
-                f.write(xdat)
-                f.close()
+                with open(xname,'wb') as f:
+                    f.write(xdat)
+                #f = open(xname,'wb')
+                #f.write(xdat)
+                #f.close()
             os.chdir(cwd)
         else:
             print('unpack operation failed!, No file loaded.')
