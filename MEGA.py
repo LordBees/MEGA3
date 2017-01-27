@@ -281,8 +281,8 @@ class mega3:
             xtemp = []
             for x in range(len(self.data_offsets)):
                 curr = hex(self.data_offsets[x]).strip('0x')
-                #if len(curr) == 1:##mathmatically better
-                if len(curr)%2 == 1: 
+                if len(curr) == 1:
+                #if len(curr)%2 == 1: ##mathmatically better possibly
                     curr = '0'+curr
                 xtemp.append(bytes.fromhex(str(curr)))
 
