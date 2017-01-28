@@ -280,25 +280,41 @@ class mega3:
             ##offset conversion
             xtemp = []
             for x in range(len(self.data_offsets)):
-                curr = hex(self.data_offsets[x]).strip('0x')
-                if len(curr) == 1:
-                #if len(curr)%2 == 1: ##mathmatically better possibly
+                curr = hex(self.data_offsets[x])#.strip('0x')
+                #if len(curr) == 1:
+                curr = curr[2:]##strip 0x here to make it easier
+                if len(curr)%2 == 1: ##mathmatically better possibly
                     curr = '0'+curr
-                xtemp.append(bytes.fromhex(str(curr)))
+                curr = bytes.fromhex(curr)##convert to bytes here to see if preserving bytes structure
+                print('padding:',curr)
+                for padding in range(0,4-int(len(curr))):
+                    curr  = bytes.fromhex('00')+curr
+                print(curr)
+                #xtemp.append(bytes.fromhex(curr[2:]))
+                xtemp.append(curr)
+                
 
-            #padding v2
-            for x in range(len(xtemp)):
-                padbytes = 4-len(xtemp[x])##4bytes - byte len is bytes to add
-                if   padbytes == 0:#no adding so pass(added for readability)
-                    pass
-                elif padbytes == 1:
-                    xtemp[x] = bytes.fromhex('00') + xtemp[x] 
-                elif padbytes == 2:
-                    xtemp[x] = bytes.fromhex('0000') + xtemp[x] 
-                elif padbytes == 3:
-                    xtemp[x] = bytes.fromhex('000000') + xtemp[x] 
-                else:
-                    print('INVALID PADBYTES VALUE!')
+            #padding v3 ##EDIT: moved up above
+            #for x in range(len(xtemp)):
+                #xtemp[x] = xtemp[x].zfill(8-len(xtemp[x]))##pads with zeroes up to 4 bytes
+                #for hexbits in range(0,(8-len(xtemp[x])),2):
+                    #xtemp[x] =  bytes.fromhex('00') + xtemp[x]
+                    #print(xtemp[x])
+
+                #padbytes = 4-len(xtemp[x])##4bytes - byte len is bytes to add
+                #if   padbytes == 0:#no adding so pass(added for readability)
+                #    pass
+                #elif padbytes == 1:
+                #    xtemp[x] = bytes.fromhex('00') + xtemp[x] 
+                #elif padbytes == 2:
+                #    xtemp[x] = bytes.fromhex('0000') + xtemp[x] 
+                #elif padbytes == 3:
+                #    xtemp[x] = bytes.fromhex('000000') + xtemp[x] 
+                #else:
+                #    print('INVALID PADBYTES VALUE!')
+            print('xt vs datlen')
+            print(xtemp)
+            print(self.data_offsets)
             save_data.append(xtemp)#offsets
             xtemp = []
             ##prepoffsetsfor saving
